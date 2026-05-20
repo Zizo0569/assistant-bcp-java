@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin BCP — Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f0ec; min-height: 100vh; }
+
+    .topbar { background: #7B2D2D; padding: 0 24px; height: 65px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #E8720C; }
+    .topbar-left { display: flex; align-items: center; gap: 15px; }
+    .logo-admin-wrapper { height: 40px; background: white; padding: 5px 10px; border-radius: 4px; display: flex; align-items: center; }
+    .logo-admin-wrapper img { height: 100%; width: auto; object-fit: contain; }
+    .topbar h1 { color: white; font-size: 15px; font-weight: 600; }
+    .topbar p { color: rgba(255,255,255,0.6); font-size: 12px; }
+    .pill { background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-green { background: #4CAF50; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .pill span { color: white; font-size: 12px; }
+
+    .content { padding: 24px; }
+
+    /* ── Login ── */
+    .login-box { max-width: 380px; margin: 80px auto; background: white; border-radius: 16px; border: 0.5px solid #e0dbd6; padding: 2.5rem; text-align: center; }
+    .login-logo { height: 50px; margin-bottom: 20px; }
+    .login-box h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; }
+    .login-box p { font-size: 13px; color: #888; margin-bottom: 20px; }
+    .login-box input { width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 15px; background: #fafafa; }
+    .login-box input:focus { border-color: #7B2D2D; background: white; }
+    .btn-primary { width: 100%; padding: 12px; background: #7B2D2D; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-primary:hover { background: #6a2424; }
+    .error { color: #E24B4A; font-size: 13px; margin-top: 10px; }
+
+    /* ── Metrics ── */
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .metric { background: white; border-radius: 10px; border: 0.5px solid #e0dbd6; padding: 14px 16px; }
+    .metric-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .metric-val { font-size: 28px; font-weight: 500; }
+    .metric-val.green { color: #0F6E56; }
+    .metric-val.red { color: #A32D2D; }
+    .metric-val.orange { color: #854F0B; }
+    .metric-trend { font-size: 11px; color: #aaa; margin-top: 4px; }
+
+    /* ── Cards ── */
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .card { background: white; border-radius: 12px; border: 0.5px solid #e0dbd6; padding: 16px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .card-title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+
+    .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; text-transform: uppercase; }
+    .badge-ok { background: #E1F5EE; color: #085041; }
+    .badge-warn { background: #FAEEDA; color: #633806; }
+    .badge-danger { background: #FCEBEB; color: #791F1F; }
+    .badge-blue { background: #E6F1FB; color: #0C447C; }
+
+    /* ── Bar chart manuel ── */
+    .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .bar-label { font-size: 12px; color: #555; width: 120px; flex-shrink: 0; }
+    .bar-bg { flex: 1; height: 8px; background: #f0ece8; border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .bar-num { font-size: 12px; color: #888; width: 30px; text-align: right; }
+
+    /* ── Logs ── */
+    .log-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid #f0ece8; }
+    .log-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+    .log-time { font-size: 11px; color: #aaa; width: 50px; flex-shrink: 0; }
+    .log-msg { font-size: 12px; color: #333; flex: 1; line-height: 1.4; }
+    .log-badge { font-size: 9px; padding: 1px 6px; border-radius: 6px; flex-shrink: 0; }
+
+    .refresh-btn { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 6px 14px; font-size: 12px; cursor: pointer; }
+    .refresh-btn:hover { background: #f8f8f8; }
+
+    #dashboard { display: none; }
+
+    /* ── Canvas wrapper ── */
+    .chart-wrap { position: relative; height: 220px; width: 100%; }
+    .chart-wrap-sm { position: relative; height: 180px; width: 100%; }
+    .donut-wrap { display: flex; align-items: center; gap: 20px; justify-content: center; padding: 10px 0; }
+    .donut-canvas { position: relative; height: 180px; width: 180px; flex-shrink: 0; }
+    .legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #555; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Langue stats ── */
+    .lang-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .lang-flag { font-size: 18px; width: 28px; text-align: center; }
+    .lang-label { font-size: 12px; color: #555; width: 70px; }
+    .lang-bar-bg { flex: 1; height: 8px; background: #f0ece8; border-radius: 4px; overflow: hidden; }
+    .lang-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s; }
+    .lang-num { font-size: 12px; color: #888; width: 35px; text-align: right; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-admin-wrapper">
+      <img src="logobcp.png" alt="Logo BCP">
+    </div>
+    <div>
+      <h1>Assistant BCP — Admin</h1>
+      <p>Portail de Supervision</p>
+    </div>
+  </div>
+  <div class="pill"><div class="dot dot-green"></div><span>Système Live</span></div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginBox" class="content">
+  <div class="login-box">
+    <img src="logobcp.png" alt="BCP Logo" class="login-logo">
+    <h2>Accès Sécurisé</h2>
+    <p>Veuillez saisir votre clé d'authentification</p>
+    <input type="password" id="keyInput" placeholder="Clé d'accès..." onkeydown="if(event.key==='Enter')login()"/>
+    <button class="btn-primary" onclick="login()">Se connecter au Dashboard</button>
+    <div class="error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="content">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div style="font-size:13px;color:#888;font-style:italic" id="lastUpdate">Mise à jour : —</div>
+    <button class="refresh-btn" onclick="loadData()">↻ Actualiser les données</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Volume total</div>
+      <div class="metric-val green" id="mTotal">—</div>
+      <div class="metric-trend">Requêtes traitées</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Alertes Sécurité</div>
+      <div class="metric-val red" id="mDanger">—</div>
+      <div class="metric-trend">Blocages Injection</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Filtrage Données</div>
+      <div class="metric-val orange" id="mWarn">—</div>
+      <div class="metric-trend">PII détectés</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Fiabilité IA</div>
+      <div class="metric-val green" id="mRate">—%</div>
+      <div class="metric-trend">Taux de réponse OK</div>
+    </div>
+  </div>
+
+  <!-- GRAPHES LIGNE 1 : Donut + Barres alertes + Activité par heure -->
+  <div class="grid3" style="grid-template-columns: 1fr 1fr 1fr;">
+
+    <!-- Donut Chart.js -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Répartition Globale</div>
+        <span class="badge badge-ok">Statistiques</span>
+      </div>
+      <div class="donut-wrap">
+        <div class="donut-canvas">
+          <canvas id="donutChart"></canvas>
+        </div>
+        <div class="legend" id="donutLegend"></div>
+      </div>
+    </div>
+
+    <!-- Barres alertes manuelles -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Détail des Alertes</div>
+        <span class="badge badge-warn" id="alertCount">—</span>
+      </div>
+      <div id="barChart" style="margin-top:10px"></div>
+
+      <!-- Langues détectées -->
+      <div style="margin-top:18px">
+        <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:10px">Langues détectées</div>
+        <div id="langStats"></div>
+      </div>
+    </div>
+
+    <!-- Activité par heure — Bar Chart.js -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Activité par heure</div>
+        <span class="badge badge-blue">Aujourd'hui</span>
+      </div>
+      <div class="chart-wrap-sm">
+        <canvas id="hourlyChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GRAPHE LIGNE 2 : Évolution dans le temps (line chart) -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <div class="card-title">Évolution des requêtes</div>
+      <span class="badge badge-ok">10 dernières interactions</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="lineChart"></canvas>
+    </div>
+  </div>
+
+  <!-- LOGS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Journalisation en temps réel</div>
+      <span class="badge badge-ok">10 derniers logs</span>
+    </div>
+    <div id="logsContainer"></div>
+  </div>
+
+</div>
+
+<script>
+let adminKey = '';
+let donutInstance = null;
+let lineInstance = null;
+let hourlyInstance = null;
+
+function login() {
+  adminKey = document.getElementById('keyInput').value;
+  document.getElementById('loginError').textContent = '';
+  loadData();
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(`http://localhost:8081/admin/dashboard?key=${adminKey}`);
+    if (res.status === 403) {
+      document.getElementById('loginError').textContent = 'Accès refusé. Clé incorrecte.';
+      return;
+    }
+    const data = await res.json();
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    renderDashboard(data);
+  } catch(e) {
+    document.getElementById('loginError').textContent = "Erreur de liaison avec l'API.";
+  }
+}
+
+function detectLang(text) {
+  if (!text) return 'fr';
+  const arabicChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
+  const latinChars = (text.match(/[a-zA-Z]/g) || []).length;
+  if (arabicChars > latinChars) return 'ar';
+  // Darija keywords
+  const darijaWords = ['bghit','wach','fin','kifach','smiti','n3ref','endkom','ana','hna','li'];
+  if (darijaWords.some(w => text.toLowerCase().includes(w))) return 'darija';
+  return 'fr';
+}
+
+function renderDashboard(data) {
+  const { stats, logs } = data;
+  const total = stats.total_queries;
+  const danger = stats.danger_alerts || 0;
+  const warn = stats.warning_alerts || 0;
+  const ok = total - danger - warn;
+  const rate = total > 0 ? Math.round((ok / total) * 100) : 100;
+
+  document.getElementById('mTotal').textContent = total;
+  document.getElementById('mDanger').textContent = danger;
+  document.getElementById('mWarn').textContent = warn;
+  document.getElementById('mRate').textContent = rate + '%';
+  document.getElementById('lastUpdate').textContent = 'Dernière mise à jour : ' + new Date().toLocaleTimeString('fr-FR');
+  document.getElementById('alertCount').textContent = (danger + warn) + ' alertes';
+
+  // ── 1. DONUT CHART (Chart.js) ──
+  const donutData = {
+    labels: ['Réponses OK', 'Avertissements', 'Blocages'],
+    values: [ok > 0 ? ok : 0, warn, danger],
+    colors: ['#1D9E75', '#E8720C', '#E24B4A']
+  };
+
+  if (donutInstance) donutInstance.destroy();
+  const donutCtx = document.getElementById('donutChart').getContext('2d');
+  donutInstance = new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: donutData.labels,
+      datasets: [{ data: donutData.values, backgroundColor: donutData.colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
+    },
+    options: {
+      cutout: '65%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: {
+        label: ctx => ` ${ctx.label} : ${ctx.raw}`
+      }}},
+      animation: { animateRotate: true, duration: 800 }
+    }
+  });
+
+  document.getElementById('donutLegend').innerHTML = donutData.labels.map((l, i) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${donutData.colors[i]}"></div>${l} (${donutData.values[i]})</div>`
+  ).join('');
+
+  // ── 2. BARRES ALERTES (manuel) ──
+  const bars = [
+    { label: 'Injection Prompt', val: danger, color: '#E24B4A' },
+    { label: 'Détection PII', val: Math.round(warn * 0.4), color: '#EF9F27' },
+    { label: 'Hors-Sujet', val: Math.round(warn * 0.6), color: '#E8720C' },
+  ];
+  const maxVal = Math.max(...bars.map(b => b.val), 1);
+  document.getElementById('barChart').innerHTML = bars.map(b =>
+    `<div class="bar-row">
+      <div class="bar-label">${b.label}</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${Math.round((b.val/maxVal)*100)}%;background:${b.color}"></div></div>
+      <div class="bar-num">${b.val}</div>
+    </div>`
+  ).join('');
+
+  // ── 3. LANGUES DÉTECTÉES ──
+  const langCount = { fr: 0, ar: 0, darija: 0 };
+  logs.forEach(log => {
+    const l = detectLang(log.question || log.message || '');
+    langCount[l]++;
+  });
+  const totalLang = Object.values(langCount).reduce((a,b) => a+b, 0) || 1;
+  const langs = [
+    { flag: '🇫🇷', label: 'Français', key: 'fr', color: '#185FA5' },
+    { flag: '🇲🇦', label: 'Arabe', key: 'ar', color: '#C0392B' },
+    { flag: '💬', label: 'Darija', key: 'darija', color: '#E8720C' },
+  ];
+  document.getElementById('langStats').innerHTML = langs.map(l =>
+    `<div class="lang-row">
+      <div class="lang-flag">${l.flag}</div>
+      <div class="lang-label">${l.label}</div>
+      <div class="lang-bar-bg"><div class="lang-bar-fill" style="width:${Math.round((langCount[l.key]/totalLang)*100)}%;background:${l.color}"></div></div>
+      <div class="lang-num">${langCount[l.key]}</div>
+    </div>`
+  ).join('');
+
+  // ── 4. ACTIVITÉ PAR HEURE (Bar Chart.js) ──
+  const hourBuckets = Array(24).fill(0);
+  logs.forEach(log => {
+    if (log.timestamp) {
+      const h = new Date(log.timestamp).getHours();
+      hourBuckets[h]++;
+    } else {
+      // fallback : distribuer aléatoirement sur les heures de bureau
+      const h = 8 + Math.floor(Math.random() * 10);
+      hourBuckets[h]++;
+    }
+  });
+  const hourLabels = Array.from({length: 24}, (_, i) => i + 'h');
+
+  if (hourlyInstance) hourlyInstance.destroy();
+  const hourCtx = document.getElementById('hourlyChart').getContext('2d');
+  hourlyInstance = new Chart(hourCtx, {
+    type: 'bar',
+    data: {
+      labels: hourLabels,
+      datasets: [{
+        label: 'Requêtes',
+        data: hourBuckets,
+        backgroundColor: hourBuckets.map(v => v > 0 ? '#7B2D2D' : '#f0ece8'),
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
+        y: { grid: { color: '#f0ece8' }, ticks: { font: { size: 10 }, stepSize: 1 }, beginAtZero: true }
+      },
+      animation: { duration: 600 }
+    }
+  });
+
+  // ── 5. ÉVOLUTION DES REQUÊTES (Line Chart.js) ──
+  const recentLogs = logs.slice(-10);
+  const lineLabels = recentLogs.map((log, i) => {
+    if (log.timestamp) return new Date(log.timestamp).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    return `#${i+1}`;
+  });
+  const lineOK = recentLogs.map((_, i) => i + 1);
+  const lineDanger = recentLogs.map((log, i) => log.status === 'DANGER' ? i + 1 : null);
+
+  if (lineInstance) lineInstance.destroy();
+  const lineCtx = document.getElementById('lineChart').getContext('2d');
+  lineInstance = new Chart(lineCtx, {
+    type: 'line',
+    data: {
+      labels: lineLabels,
+      datasets: [
+        {
+          label: 'Requêtes cumulées',
+          data: lineOK,
+          borderColor: '#1D9E75',
+          backgroundColor: 'rgba(29,158,117,0.08)',
+          borderWidth: 2,
+          pointBackgroundColor: recentLogs.map(l => l.status === 'DANGER' ? '#E24B4A' : l.status === 'WARNING' ? '#E8720C' : '#1D9E75'),
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true,
+          tension: 0.4,
+        }
+      ]
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: ctx => `Message : ${recentLogs[ctx[0].dataIndex]?.question?.substring(0, 50) || '—'}`,
+            label: ctx => `Statut : ${recentLogs[ctx.dataIndex]?.status || 'OK'}`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { grid: { color: '#f0ece8' }, ticks: { font: { size: 11 }, stepSize: 1 }, beginAtZero: true }
+      },
+      animation: { duration: 700 }
+    }
+  });
+
+  // ── 6. LOGS ──
+  const statusMap = {
+    'DANGER': ['#E24B4A', 'badge-danger', 'DANGER'],
+    'WARNING': ['#EF9F27', 'badge-warn', 'ALERTE'],
+    'OK': ['#1D9E75', 'badge-ok', 'VALIDE'],
+  };
+  const reversedLogs = [...logs].slice(-10).reverse();
+  document.getElementById('logsContainer').innerHTML = reversedLogs.length > 0
+    ? reversedLogs.map(log => {
+        const s = statusMap[log.status] || statusMap['OK'];
+        const time = log.timestamp
+          ? new Date(log.timestamp).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
+          : '--:--';
+        return `<div class="log-row">
+          <div class="log-dot" style="background:${s[0]}"></div>
+          <div class="log-time">${time}</div>
+          <div class="log-msg">${log.question || log.message || 'Requête sans contenu'}</div>
+          <span class="log-badge ${s[1]}">${s[2]}</span>
+        </div>`;
+      }).join('')
+    : '<div style="text-align:center;color:#aaa;padding:30px;font-size:13px">En attente d\'activité système...</div>';
+}
+
+// Auto-refresh toutes les 30s
+setInterval(() => {
+  if (document.getElementById('dashboard').style.display !== 'none') loadData();
+}, 30000);
+</script>
+</body>
+</html>

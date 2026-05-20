@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Assistant BCP — Banque Populaire du Maroc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:        #8B0A14;
+      --red-dark:   #6a0810;
+      --red-light:  #a51220;
+      --orange:     #E8720C;
+      --orange-lt:  #ff8c2a;
+      --cream:      #faf7f4;
+      --warm-gray:  #f0ece8;
+      --border:     #e8e0d8;
+      --text-main:  #1a1614;
+      --text-soft:  #6b5e58;
+      --text-muted: #9e918a;
+      --white:      #ffffff;
+      --bubble-bot: #ffffff;
+      --bubble-user:#8B0A14;
+      --shadow-sm:  0 2px 8px rgba(139,10,20,0.08);
+      --shadow-md:  0 8px 32px rgba(139,10,20,0.12);
+      --shadow-lg:  0 20px 60px rgba(139,10,20,0.18);
+      --radius:     18px;
+      --radius-sm:  10px;
+    }
+
+
+    /* ══ DARK MODE ══════════════════════════════════ */
+    [data-theme="dark"] {
+      --red:        #c0392b;
+      --red-dark:   #a93226;
+      --red-light:  #e74c3c;
+      --orange:     #e67e22;
+      --orange-lt:  #f39c12;
+      --cream:      #1a1a2e;
+      --warm-gray:  #16213e;
+      --border:     #2d3561;
+      --text-main:  #eaeaea;
+      --text-soft:  #a0a8c0;
+      --text-muted: #6b7280;
+      --white:      #0f3460;
+      --bubble-bot: #1e2a4a;
+      --bubble-user:#8B0A14;
+      --shadow-sm:  0 2px 8px rgba(0,0,0,0.3);
+      --shadow-md:  0 8px 32px rgba(0,0,0,0.4);
+      --shadow-lg:  0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    /* Transitions fluides */
+    body, .app, .header, .subheader, .messages, .suggestions,
+    .input-area, .footer, .msg-bubble, .sim-form, .sim-result,
+    .suggestion, .input-wrap input, .reset-btn, .msg-feedback {
+      transition: background 0.3s ease, color 0.3s ease,
+                  border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Bouton dark mode */
+    .dark-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.9);
+      padding: 5px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 15px;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+    .dark-btn:hover { background: rgba(255,255,255,0.22); }
+
+    /* Dark — fond app */
+    [data-theme="dark"] body { background: #16213e; }
+    [data-theme="dark"] body::before {
+      background:
+        radial-gradient(ellipse 60% 50% at 80% 10%, rgba(192,57,43,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 10% 90%, rgba(230,126,34,0.06) 0%, transparent 60%);
+    }
+    [data-theme="dark"] .app { background: #0f3460; }
+
+    /* Dark — header */
+    [data-theme="dark"] .header { background: #0a1931; border-bottom-color: #e67e22; }
+    [data-theme="dark"] .logo-ring { background: #1a2a4a; box-shadow: 0 0 0 2px rgba(255,255,255,0.1); }
+    [data-theme="dark"] .logo-ring .logo-fb { color: #e67e22; }
+
+    /* Dark — bandeau */
+    [data-theme="dark"] .subheader { background: linear-gradient(90deg, #b8620a 0%, #c97118 100%); }
+
+    /* Dark — messages zone */
+    [data-theme="dark"] .messages { background: #1a1a2e; }
+    [data-theme="dark"] .date-sep { background: #2d3561; color: #a0a8c0; }
+
+    /* Dark — bulles bot */
+    [data-theme="dark"] .msg.bot .msg-bubble {
+      background: #1e2a4a;
+      color: #eaeaea;
+      border-color: #2d3561;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    [data-theme="dark"] .msg.bot .msg-avatar {
+      background: #1e2a4a;
+      border-color: #2d3561;
+    }
+
+    /* Dark — bulles user (reste rouge) */
+    [data-theme="dark"] .msg.user .msg-bubble {
+      background: #8B0A14;
+      box-shadow: 0 4px 16px rgba(139,10,20,0.4);
+    }
+
+    /* Dark — suggestions */
+    [data-theme="dark"] .suggestions { background: #0f3460; border-top-color: #2d3561; }
+    [data-theme="dark"] .suggestion {
+      background: #1e2a4a;
+      border-color: #e67e22;
+      color: #f39c12;
+    }
+    [data-theme="dark"] .suggestion:hover { background: #e67e22; color: white; }
+
+    /* Dark — input */
+    [data-theme="dark"] .input-area { background: #0f3460; border-top-color: #2d3561; }
+    [data-theme="dark"] .input-wrap input {
+      background: #1e2a4a;
+      color: #eaeaea;
+      border-color: #2d3561;
+    }
+    [data-theme="dark"] .input-wrap input::placeholder { color: #6b7280; }
+    [data-theme="dark"] .input-wrap input:focus {
+      border-color: #e67e22;
+      background: #253558;
+      box-shadow: 0 0 0 3px rgba(230,126,34,0.15);
+    }
+
+    /* Dark — footer */
+    [data-theme="dark"] .footer { background: #0a1931; }
+
+    /* Dark — simulateur */
+    [data-theme="dark"] .sim-form {
+      background: linear-gradient(135deg, #1e2a4a 0%, #253558 100%);
+      border-color: rgba(230,126,34,0.4);
+    }
+    [data-theme="dark"] .sim-field input {
+      background: #0f3460;
+      color: #eaeaea;
+      border-color: #2d3561;
+    }
+    [data-theme="dark"] .sim-field input:focus { border-color: #e67e22; }
+    [data-theme="dark"] .sim-result {
+      background: #1e2a4a;
+      border-color: #2d3561;
+    }
+    [data-theme="dark"] .sim-result-row { border-bottom-color: #2d3561; }
+    [data-theme="dark"] .sim-result-row .lbl { color: #a0a8c0; }
+    [data-theme="dark"] .sim-result-row .val { color: #eaeaea; }
+
+    /* Dark — feedback */
+    [data-theme="dark"] .fb-btn {
+      background: #1e2a4a;
+      border-color: #2d3561;
+    }
+    [data-theme="dark"] .fb-btn:hover { border-color: #e67e22; }
+    [data-theme="dark"] .fb-label { color: #6b7280; }
+
+    /* Dark — liens PDF */
+    [data-theme="dark"] .msg-bubble a {
+      box-shadow: 0 4px 14px rgba(230,126,34,0.4);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--warm-gray);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ── Fond décoratif ─────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 80% 10%, rgba(139,10,20,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 10% 90%, rgba(232,114,12,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 820px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════════
+       HEADER
+    ══════════════════════════════════ */
+    .header {
+      background: var(--red);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: 72px;
+      border-bottom: 3px solid var(--orange);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      pointer-events: none;
+    }
+
+    .logo-ring {
+      width: 46px; height: 46px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      padding: 5px;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+    }
+    .logo-ring img { width: 100%; height: auto; object-fit: contain; display: block; }
+    .logo-ring .logo-fb { display:none; color: var(--red); font-weight:900; font-size:12px; }
+    .logo-ring.err img { display:none; }
+    .logo-ring.err .logo-fb { display:block; }
+
+    .logo-text { line-height: 1; }
+    .logo-text strong { color: var(--white); font-size: 13px; font-weight: 700; display:block; letter-spacing: 0.3px; }
+    .logo-text em { color: var(--orange); font-size: 10px; font-style:normal; text-transform:uppercase; letter-spacing: 1.2px; }
+
+    .hdivider { width:1px; height:32px; background: rgba(255,255,255,0.2); margin: 0 4px; }
+
+    .header-center { flex:1; min-width:0; }
+    .header-center h2 {
+      color: var(--white);
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .header-center p { color: rgba(255,255,255,0.55); font-size: 11px; margin-top:1px; }
+
+    .header-actions { display:flex; align-items:center; gap:10px; }
+
+    .reset-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.9);
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .reset-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      background: #4CAF50;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(76,175,80,0.3);
+      animation: pulse 2.5s ease infinite;
+    }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 2px rgba(76,175,80,0.3)} 50%{box-shadow:0 0 0 5px rgba(76,175,80,0)} }
+
+    /* ── Bandeau orange ──────────────────────────────── */
+    .subheader {
+      background: linear-gradient(90deg, var(--orange) 0%, #f07d20 100%);
+      padding: 6px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .subheader-left { display:flex; align-items:center; gap:6px; }
+    .subheader-left svg { opacity:0.9; }
+    .subheader span { color: rgba(255,255,255,0.95); font-size: 11px; font-weight: 500; }
+
+    .lang-badge {
+      background: rgba(255,255,255,0.22);
+      color: white;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 10px;
+      letter-spacing: 0.8px;
+      min-width: 30px; text-align:center;
+      transition: all 0.3s;
+    }
+
+    /* ── Barre progression onboarding ───────────────── */
+    .ob-progress {
+      display: none;
+      padding: 9px 20px 8px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .ob-progress-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .ob-progress-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ob-progress-label::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse 1.5s ease infinite;
+    }
+    .ob-progress-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .ob-progress-track {
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+    .ob-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red) 0%, var(--orange) 100%);
+      border-radius: 4px;
+      transition: width 0.5s cubic-bezier(.4,0,.2,1);
+      width: 0%;
+    }
+    .ob-progress-fill.done { background: #1D9E75; }
+    .ob-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .ob-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .ob-dot.done  { background: var(--red); }
+    .ob-dot.active { width: 10px; height: 10px; background: var(--orange); }
+    .ob-dot.complete { background: #1D9E75; }
+    [data-theme="dark"] .ob-progress { background: #0f3460; border-bottom-color: #2d3561; }
+    [data-theme="dark"] .ob-progress-track { background: #2d3561; }
+
+    /* ── Panneau historique ──────────────────────────── */
+    .history-panel {
+      position: absolute;
+      top: 72px; right: 0;
+      width: 280px;
+      max-height: calc(100vh - 72px);
+      background: var(--white);
+      border-left: 1px solid var(--border);
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    .history-panel.open { transform: translateX(0); }
+    .history-header {
+      padding: 14px 16px;
+      background: var(--red);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .history-close {
+      background: none; border: none; color: white;
+      font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1;
+    }
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .history-item {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid var(--border);
+      margin-bottom: 6px;
+      transition: all 0.15s;
+    }
+    .history-item:hover { border-color: var(--orange); background: var(--cream); }
+    .history-item-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .history-item-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .history-empty {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 24px 16px;
+    }
+    .history-clear {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .history-clear button {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-soft);
+      border-radius: 8px;
+      padding: 7px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .history-clear button:hover { border-color: var(--red); color: var(--red); }
+    [data-theme="dark"] .history-panel { background: #0f3460; border-left-color: #2d3561; }
+    [data-theme="dark"] .history-item { border-color: #2d3561; }
+    [data-theme="dark"] .history-item:hover { background: #1e2a4a; }
+
+    /* ══════════════════════════════════
+       MESSAGES ZONE
+    ══════════════════════════════════ */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: var(--cream);
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 3px; }
+    .messages::-webkit-scrollbar-thumb { background: rgba(139,10,20,0.15); border-radius: 3px; }
+
+    .date-sep {
+      align-self: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--border);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Messages ──────────────────────────────────── */
+    .msg {
+      display: flex;
+      gap: 10px;
+      max-width: 82%;
+      animation: msgIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes msgIn {
+      from { opacity:0; transform: translateY(12px) scale(0.96); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    .msg.bot  { align-self: flex-start; }
+    .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .msg.bot .msg-avatar {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      padding: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+    .msg.bot .msg-avatar img { width: 100%; object-fit:contain; }
+    .msg.user .msg-avatar {
+      background: var(--orange);
+      color: white;
+      font-size: 13px; font-weight: 700;
+    }
+
+    .msg-content { display:flex; flex-direction:column; gap:3px; min-width:0; }
+
+    .msg-bubble {
+      padding: 13px 17px;
+      border-radius: var(--radius);
+      font-size: 13.5px;
+      line-height: 1.65;
+      word-break: break-word;
+    }
+    .msg.bot .msg-bubble {
+      background: var(--white);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 5px;
+      box-shadow: var(--shadow-sm);
+    }
+    .msg.user .msg-bubble {
+      background: var(--red);
+      color: white;
+      border-bottom-right-radius: 5px;
+      box-shadow: 0 4px 16px rgba(139,10,20,0.25);
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .msg.user .msg-time { text-align:right; }
+
+    /* ── Liens PDF ──────────────────────────────────── */
+    .msg-bubble a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      background: linear-gradient(135deg, var(--orange) 0%, #f07d20 100%);
+      color: white;
+      padding: 9px 18px;
+      border-radius: 22px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(232,114,12,0.35);
+      transition: all 0.2s;
+    }
+    .msg-bubble a:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,114,12,0.45); }
+    .msg-bubble a::before { content: '↓'; font-weight: 800; }
+
+    /* ── Feedback ──────────────────────────────────── */
+    .msg-feedback {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      opacity: 0;
+      animation: fadeIn 0.4s 0.5s forwards;
+    }
+    @keyframes fadeIn { to { opacity:1; } }
+    .fb-label { font-size: 11px; color: var(--text-muted); }
+    .fb-btn {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.18s;
+      line-height: 1;
+    }
+    .fb-btn:hover { transform: scale(1.15); border-color: var(--orange); }
+    .fb-sent { font-size: 11px; color: #4CAF50; font-style:italic; }
+
+    /* ══════════════════════════════════
+       SIMULATEUR
+    ══════════════════════════════════ */
+    .sim-form {
+      background: linear-gradient(135deg, #fff8f2 0%, #fff4eb 100%);
+      border: 1.5px solid rgba(232,114,12,0.3);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      margin-top: 8px;
+      box-shadow: 0 4px 20px rgba(232,114,12,0.1);
+    }
+    .sim-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--red);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sim-field { margin-bottom: 12px; }
+    .sim-field label {
+      display: block;
+      font-size: 11px; font-weight: 600;
+      color: var(--text-soft);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .sim-field input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--text-main);
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    .sim-field input:focus { border-color: var(--orange); }
+    .sim-cta {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-light) 100%);
+      color: white;
+      border: none;
+      border-radius: 22px;
+      font-size: 13px; font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 16px rgba(139,10,20,0.3);
+    }
+    .sim-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(139,10,20,0.4); }
+
+    .sim-result {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      margin-top: 6px;
+      box-shadow: var(--shadow-sm);
+    }
+    .sim-result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sim-result-row:last-child { border:none; }
+    .sim-result-row .lbl { color: var(--text-soft); }
+    .sim-result-row .val { font-weight: 600; color: var(--text-main); }
+    .sim-hero {
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-light) 100%);
+      padding: 16px;
+      text-align: center;
+    }
+    .sim-hero .amount { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: white; }
+    .sim-hero .sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; letter-spacing: 0.5px; }
+
+    /* Boutons type crédit */
+    .sim-type-btn {
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      color: var(--text-soft);
+      font-size: 12px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .sim-type-btn:hover { border-color: var(--orange); color: var(--orange); }
+    .sim-type-btn.sim-type-active {
+      background: var(--red);
+      border-color: var(--red);
+      color: white;
+      box-shadow: 0 3px 10px rgba(139,10,20,0.25);
+    }
+    [data-theme="dark"] .sim-type-btn { background: #1e2a4a; border-color: #2d3561; color: #a0a8c0; }
+    [data-theme="dark"] .sim-type-btn.sim-type-active { background: var(--red); border-color: var(--red); color: white; }
+
+    /* ══════════════════════════════════
+       TYPING
+    ══════════════════════════════════ */
+    .typing-wrap { display:flex; gap:5px; padding: 6px 2px; align-items:center; }
+    .typing-wrap span {
+      width: 7px; height: 7px;
+      background: var(--orange);
+      border-radius: 50%;
+      animation: bounce 1.3s ease infinite;
+    }
+    .typing-wrap span:nth-child(2) { animation-delay:0.18s; }
+    .typing-wrap span:nth-child(3) { animation-delay:0.36s; }
+    @keyframes bounce {
+      0%,60%,100%{ transform: translateY(0); opacity:0.5; }
+      30%{ transform: translateY(-6px); opacity:1; }
+    }
+
+    /* ══════════════════════════════════
+       SUGGESTIONS
+    ══════════════════════════════════ */
+    .suggestions {
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .suggestions::-webkit-scrollbar { display:none; }
+    .suggestion {
+      background: var(--white);
+      border: 1.5px solid var(--orange);
+      color: var(--orange);
+      border-radius: 20px;
+      padding: 7px 15px;
+      font-size: 12px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .suggestion:hover {
+      background: var(--orange);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(232,114,12,0.3);
+    }
+
+    /* ══════════════════════════════════
+       INPUT AREA
+    ══════════════════════════════════ */
+    .input-area {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      background: var(--white);
+      flex-shrink: 0;
+      align-items: center;
+    }
+    .input-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-wrap input {
+      width: 100%;
+      padding: 12px 48px 12px 20px;
+      border: 1.5px solid var(--border);
+      border-radius: 28px;
+      font-size: 13.5px;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .input-wrap input:focus {
+      border-color: var(--red);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(139,10,20,0.06);
+    }
+    .input-wrap input::placeholder { color: var(--text-muted); }
+
+    .send-btn {
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, var(--orange) 0%, #f07d20 100%);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(232,114,12,0.35);
+    }
+    .send-btn:hover { transform: scale(1.06); box-shadow: 0 6px 20px rgba(232,114,12,0.45); }
+    .send-btn:disabled { background: #ddd; box-shadow: none; cursor: default; transform: none; }
+    .send-btn svg { fill: white; width: 18px; height: 18px; }
+
+    /* ══════════════════════════════════
+       FOOTER
+    ══════════════════════════════════ */
+    .footer {
+      background: var(--red);
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .footer span { color: rgba(255,255,255,0.5); font-size: 10px; letter-spacing: 0.3px; }
+    .footer .sep { color: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ HEADER ══════════════════════════════════════ -->
+  <div class="header">
+    <div class="logo-ring" id="logoRing">
+      <img src="/logobcp.png" alt="BCP"
+        onerror="document.getElementById('logoRing').classList.add('err')">
+      <span class="logo-fb">BCP</span>
+    </div>
+    <div class="logo-text">
+      <strong>Banque Populaire</strong>
+      <em>du Maroc</em>
+    </div>
+    <div class="hdivider"></div>
+    <div class="header-center">
+      <h2>Assistant Intelligent BCP</h2>
+      <p id="sessionInfo">Session Sécurisée</p>
+    </div>
+    <div class="header-actions">
+      <button class="reset-btn" onclick="resetSession()">↺ Nouveau</button>
+      <button class="dark-btn" id="histBtn" onclick="toggleHistory()" title="Historique">🕐</button>
+      <button class="dark-btn" id="darkBtn" onclick="toggleDark()" title="Mode sombre">🌙</button>
+      <div class="status-dot" title="En ligne"></div>
+    </div>
+  </div>
+
+  <!-- ══ PANNEAU HISTORIQUE ════════════════════════════ -->
+  <div class="history-panel" id="historyPanel">
+    <div class="history-header">
+      <span>Historique</span>
+      <button class="history-close" onclick="toggleHistory()">✕</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+    <div class="history-clear">
+      <button onclick="clearHistory()">Effacer l'historique</button>
+    </div>
+  </div>
+
+  <!-- ══ BANDEAU ══════════════════════════════════════ -->
+  <div class="subheader">
+    <div class="subheader-left">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      <span>Cryptage de bout en bout — Vos données restent confidentielles</span>
+    </div>
+    <span class="lang-badge" id="langBadge">FR</span>
+  </div>
+
+  <!-- ══ BARRE PROGRESSION ONBOARDING ════════════════ -->
+  <div class="ob-progress" id="obProgress">
+    <div class="ob-progress-top">
+      <span class="ob-progress-label" id="obLabel">Votre prénom</span>
+      <span class="ob-progress-count" id="obCount">1 / 8</span>
+    </div>
+    <div class="ob-progress-track">
+      <div class="ob-progress-fill" id="obFill"></div>
+    </div>
+    <div class="ob-dots" id="obDots"></div>
+  </div>
+
+  <!-- ══ MESSAGES ══════════════════════════════════════ -->
+  <div class="messages" id="messages">
+    <div class="date-sep">Aujourd'hui</div>
+    <div class="msg bot">
+      <div class="msg-avatar">
+        <img src="/logobcp.png" alt="BCP"
+          onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'color:#8B0A14;font-size:9px;font-weight:900\'>BCP</span>'">
+      </div>
+      <div class="msg-content">
+        <div class="msg-bubble">
+          Bonjour et bienvenue à la <strong>Banque Populaire du Maroc</strong> 👋<br><br>
+          Je suis votre assistant intelligent. Je peux vous renseigner sur nos produits,
+          simuler un crédit, ou vous aider à constituer votre dossier.<br><br>
+          <em>Comment puis-je vous aider aujourd'hui ?</em>
+        </div>
+        <div class="msg-time">maintenant</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SUGGESTIONS ══════════════════════════════════ -->
+  <div class="suggestions" id="suggestions">
+    <button class="suggestion" onclick="suggest(this)">Ouvrir un compte</button>
+    <button class="suggestion" onclick="suggest(this)">Simuler un crédit</button>
+    <button class="suggestion" onclick="suggest(this)">Nos cartes bancaires</button>
+    <button class="suggestion" onclick="suggest(this)">Crédit Immobilier</button>
+    <button class="suggestion" onclick="suggest(this)">Pocket Bank</button>
+  </div>
+
+  <!-- ══ INPUT ══════════════════════════════════════ -->
+  <div class="input-area">
+    <div class="input-wrap">
+      <input type="text" id="input"
+        placeholder="Écrivez votre message... / اكتب رسالتك..."
+        onkeydown="if(event.key==='Enter') sendMessage()"
+        autocomplete="off"/>
+    </div>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+    </button>
+    <!-- Bouton micro -->
+    <button id="voiceBtn" title="Parler" onclick="startVoice()">
+      🎤
+    </button>
+    <!-- Bouton toggle voix ON/OFF -->
+    <button id="voiceToggle" onclick="toggleVoice()" title="Activer/Désactiver la voix">
+      🔊
+    </button>
+  </div>
+
+  <!-- ══ FOOTER ══════════════════════════════════════ -->
+  <div class="footer">
+    <span>© 2026 Banque Populaire du Maroc</span>
+    <span class="sep">|</span>
+    <span>Direction Transformation Digitale</span>
+  </div>
+</div>
+
+
+<!-- Bouton conseiller flottant -->
+<a href="tel:080 200 80 80" id="conseillerBtn" title="Appeler un conseiller">
+  📞
+</a>
+
+<style>
+  #conseillerBtn {
+    position: fixed;
+    bottom: 90px;
+    right: 24px;
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 4px 16px rgba(37,211,102,0.4);
+    text-decoration: none;
+    z-index: 999;
+    transition: all 0.2s;
+    animation: pulse-green 2s ease infinite;
+  }
+  #conseillerBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(37,211,102,0.6);
+  }
+  @keyframes pulse-green {
+    0%,100% { box-shadow: 0 4px 16px rgba(37,211,102,0.4); }
+    50%      { box-shadow: 0 4px 28px rgba(37,211,102,0.7); }
+  }
+
+
+  #voiceBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #8B0A14, #E8720C);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(139,10,20,0.3);
+}
+
+#voiceBtn.recording {
+  background: linear-gradient(135deg, #ff0000, #ff4444);
+  animation: pulse-red 1s ease infinite;
+}
+
+@keyframes pulse-red {
+  0%,100% { box-shadow: 0 4px 12px rgba(255,0,0,0.4); transform: scale(1); }
+  50%      { box-shadow: 0 4px 24px rgba(255,0,0,0.7); transform: scale(1.1); }
+}
+
+#voiceToggle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #1a7a4a, #25a862);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(26,122,74,0.3);
+  flex-shrink: 0;
+}
+#voiceToggle:hover { transform: scale(1.06); }
+#voiceToggle[data-off] {
+  background: linear-gradient(135deg, #555, #777);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0.6;
+}
+
+
+</style>
+
+
+<script>
+
+const BACKEND = "http://localhost:8081";
+
+let voiceEnabled = true;
+
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const btn = document.getElementById("voiceToggle");
+  btn.innerText = voiceEnabled ? "🔊" : "🔇";
+  btn.style.opacity = voiceEnabled ? "1" : "0.5";
+  if (!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+// ════════════════════════════════════════
+// VOICE ASSISTANT BCP
+// ════════════════════════════════════════
+
+let recognition = null;
+let synth = window.speechSynthesis;
+let isRecording = false;
+
+function initVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Votre navigateur ne supporte pas la reconnaissance vocale. Utilisez Chrome.");
+    return null;
+  }
+  const rec = new SpeechRecognition();
+  rec.continuous    = false;
+  rec.interimResults = false;
+  rec.lang          = getCurrentLang();
+
+  rec.onstart = () => {
+    isRecording = true;
+    document.getElementById("voiceBtn").classList.add("recording");
+    document.getElementById("voiceBtn").innerText = "⏹";
+    showVoiceStatus("Parlez maintenant...");
+  };
+
+  rec.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById("input").value = transcript;
+    showVoiceStatus(`Reconnu : "${transcript}"`);
+    setTimeout(() => sendMessage(), 500);
+  };
+
+  rec.onerror = (event) => {
+    showVoiceStatus("Erreur micro : " + event.error);
+    stopRecording();
+  };
+
+  rec.onend = () => {
+    stopRecording();
+  };
+
+  return rec;
+}
+
+
+
+function getCurrentLang() {
+  const badge = document.getElementById("langBadge")?.textContent?.trim().toUpperCase() || "FR";
+  const langs = { "FR": "fr-FR", "AR": "ar-MA", "DA": "ar-MA", "EN": "en-US" };
+  return langs[badge] || "fr-FR";
+}
+function startVoice() {
+  if (isRecording) {
+    if (recognition) recognition.stop();
+    stopRecording();
+    return;
+  }
+  recognition = initVoice();
+  if (recognition) recognition.start();
+}
+
+function stopRecording() {
+  isRecording = false;
+  const btn = document.getElementById("voiceBtn");
+  if (btn) {
+    btn.classList.remove("recording");
+    btn.innerText = "🎤";
+  }
+  setTimeout(() => hideVoiceStatus(), 2000);
+}
+
+function showVoiceStatus(msg) {
+  let el = document.getElementById("voiceStatus");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "voiceStatus";
+    el.style.cssText = `
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(139,10,20,0.9);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+    `;
+    document.body.appendChild(el);
+  }
+  el.innerText = msg;
+  el.style.display = "block";
+}
+
+function hideVoiceStatus() {
+  const el = document.getElementById("voiceStatus");
+  if (el) el.style.display = "none";
+}
+
+// ════════════════════════════════════════
+// TEXT TO SPEECH — L'assistant parle
+// ════════════════════════════════════════
+function speakResponse(text) {
+  if (!synth) return;
+
+  // Nettoyer le texte (enlever markdown)
+  const clean = text
+    .replace(/\[.*?\]\(.*?\)/g, "")
+    .replace(/[*_#`]/g, "")
+    .replace(/\n/g, " ")
+    .substring(0, 300); // Max 300 chars pour pas trop long
+
+  const utterance = new SpeechSynthesisUtterance(clean);
+  utterance.lang  = getCurrentLang();
+  utterance.rate  = 0.9;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+
+  // Choisir une voix adaptee
+  const voices = synth.getVoices();
+  const lang   = getCurrentLang().split("-")[0];
+  const voice  = voices.find(v => v.lang.startsWith(lang));
+  if (voice) utterance.voice = voice;
+
+  synth.cancel(); // Stopper si deja en train de parler
+  synth.speak(utterance);
+}
+
+// Charger les voix au demarrage
+window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.getVoices();
+};
+
+
+async function telechargerPDF(url) {
+    try {
+        const res = await fetch(url, {
+            headers: { 'ngrok-skip-browser-warning': '69420' }
+        });
+        if (!res.ok) throw new Error('Erreur ' + res.status);
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'recu_bcp.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+    } catch(e) {
+        console.error('PDF:', e);
+        window.open(url, '_blank');
+    }
+}
+
+// ══════════════════════════════════════════════
+// MODE SOMBRE
+// ══════════════════════════════════════════════
+const DARK_KEY = 'bcp_dark_mode';
+
+function initDark() {
+  const saved = localStorage.getItem(DARK_KEY);
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('darkBtn').textContent = '☀️';
+  }
+}
+
+function toggleDark() {
+  const html = document.documentElement;
+  const btn  = document.getElementById('darkBtn');
+  if (html.getAttribute('data-theme') === 'dark') {
+    html.removeAttribute('data-theme');
+    btn.textContent = '🌙';
+    localStorage.setItem(DARK_KEY, 'light');
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    btn.textContent = '☀️';
+    localStorage.setItem(DARK_KEY, 'dark');
+  }
+}
+
+// ══════════════════════════════════════════════
+// ÉTAT GLOBAL
+// ══════════════════════════════════════════════
+let SESSION_ID   = genSessionId();
+initDark();
+let userInitiale = 'C';
+let nomComplet   = '';
+let lastUserMsg  = '';
+let lastBotReply = '';
+
+function genSessionId() {
+  return 'bcp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+}
+
+// ══════════════════════════════════════════════
+// RESET SESSION
+// ══════════════════════════════════════════════
+function resetSession() {
+  if (!confirm('Démarrer une nouvelle conversation ?')) return;
+  sauvegarderConversation();   // ★ sauvegarde avant de reset
+  SESSION_ID   = genSessionId();
+  userInitiale = 'C';
+  nomComplet   = '';
+  lastUserMsg  = '';
+  lastBotReply = '';
+  hideProgressBar();
+  document.getElementById('langBadge').textContent   = 'FR';
+  document.getElementById('sessionInfo').textContent = 'Session Sécurisée';
+
+  document.getElementById('messages').innerHTML = `
+    <div class="date-sep">Nouvelle conversation</div>
+    <div class="msg bot" style="animation:msgIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both">
+      <div class="msg-avatar">
+        <img src="/logobcp.png" alt="BCP"
+          onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'color:#8B0A14;font-size:9px;font-weight:900\'>BCP</span>'">
+      </div>
+      <div class="msg-content">
+        <div class="msg-bubble">Bonjour ! Comment puis-je vous aider ?</div>
+        <div class="msg-time">${getTime()}</div>
+      </div>
+    </div>`;
+
+  setSuggestions(['Ouvrir un compte','Simuler un crédit','Nos cartes bancaires','Crédit Immobilier','Pocket Bank']);
+}
+
+// ══════════════════════════════════════════════
+// DÉTECTION LANGUE
+// ══════════════════════════════════════════════
+function detecterLangue(t) {
+  if (/[\u0600-\u06FF]/.test(t)) return 'AR';
+  if (/\b(wach|kifach|bghit|nta|ana|kayn|mzyan|chno|dyal|hna|hadi|bzzaf|smiya|walo)\b/i.test(t)) return 'DA';
+  return 'FR';
+}
+function updateLangBadge(lang) {
+  const el = document.getElementById('langBadge');
+  el.textContent = { FR:'FR', AR:'عر', DA:'DA' }[lang] || 'FR';
+  el.style.transform = 'scale(1.2)';
+  setTimeout(() => el.style.transform = '', 200);
+}
+
+// ══════════════════════════════════════════════
+// UTILITAIRES
+// ══════════════════════════════════════════════
+function getTime() {
+  return new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+}
+function escapeAndLink(text) {
+  let html = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+  html = html.replace(/\[([^\]]+)\]\((http[^)]+)\)/g, (_, label, url) => {
+    return `<button onclick="telechargerPDF('${url}')" style="
+        display:inline-block; margin-top:10px; background:#E8720C;
+        color:white; padding:8px 16px; border-radius:20px;
+        border:none; font-size:13px; font-weight:600; cursor:pointer;">
+        ${label}
+    </button>`;
+});
+  return html;
+}
+function botAvatarHTML() {
+  return `<img src="/logobcp.png" alt="BCP"
+    onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\\'color:#8B0A14;font-size:9px;font-weight:900\\'>BCP</span>'">`;
+}
+
+// ══════════════════════════════════════════════
+// AFFICHAGE MESSAGE
+// ══════════════════════════════════════════════
+function addMessage(text, type, isHtml = false) {
+  const container = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg ${type}`;
+
+  const avatar = type === 'bot'
+    ? botAvatarHTML()
+    : `<span style="font-size:13px;font-weight:700">${nomComplet ? nomComplet[0].toUpperCase() : userInitiale}</span>`;
+
+  const bubble = isHtml ? text : escapeAndLink(text);
+
+  div.innerHTML = `
+    <div class="msg-avatar">${avatar}</div>
+    <div class="msg-content">
+      <div class="msg-bubble">${bubble}</div>
+      <div class="msg-time">${getTime()}</div>
+    </div>`;
+
+  // Boutons feedback sous les réponses bot texte
+  if (type === 'bot' && !isHtml) {
+    const fb = document.createElement('div');
+    fb.className = 'msg-feedback';
+    fb.innerHTML = `
+      <span class="fb-label">Utile ?</span>
+      <button class="fb-btn" onclick="envoyerFeedback(this,5)" title="Oui">👍</button>
+      <button class="fb-btn" onclick="envoyerFeedback(this,1)" title="Non">👎</button>`;
+    div.querySelector('.msg-content').appendChild(fb);
+  }
+
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+// ══════════════════════════════════════════════
+// FEEDBACK
+// ══════════════════════════════════════════════
+async function envoyerFeedback(btn, note) {
+  btn.parentElement.innerHTML = '<span class="fb-sent">✓ Merci !</span>';
+  try {
+    await fetch(BACKEND +'/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '69420' },
+      body: JSON.stringify({ session_id: SESSION_ID, message: lastUserMsg, reponse: lastBotReply, note })
+    });
+  } catch(e) { console.warn('Feedback:', e); }
+}
+
+// ══════════════════════════════════════════════
+// TYPING INDICATOR
+// ══════════════════════════════════════════════
+function showTyping() {
+  const container = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg bot'; div.id = 'typing';
+  div.innerHTML = `
+    <div class="msg-avatar">${botAvatarHTML()}</div>
+    <div class="msg-content">
+      <div class="msg-bubble">
+        <div class="typing-wrap"><span></span><span></span><span></span></div>
+      </div>
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+// ══════════════════════════════════════════════
+// SUGGESTIONS
+// ══════════════════════════════════════════════
+const SUGG_CTX = {
+  credit:  ['Simuler mon crédit','Taux immobilier BCP','Documents requis','Ouvrir un dossier'],
+  compte:  ['Ouvrir un compte','Frais et tarifs','Cartes bancaires','Hissab Bikhir'],
+  carte:   ['Visa Gold','Visa Platinum','Plafonds de retrait','Carte prépayée'],
+  digital: ['Pocket Bank','Chaabi Net','Paiement NFC','BCP Pro'],
+  default: ['Ouvrir un compte','Simuler un crédit','Nos cartes bancaires','Pocket Bank'],
+};
+
+function setSuggestions(items) {
+  const el = document.getElementById('suggestions');
+  el.innerHTML = items.map(s => `<button class="suggestion" onclick="suggest(this)">${s}</button>`).join('');
+  el.style.display = 'flex';
+}
+
+function afficherSuggestionsContextuelles(r) {
+  const t = r.toLowerCase();
+  let cle = 'default';
+  if (/credit|pret|immobilier|taux|mensualit/i.test(t))          cle = 'credit';
+  else if (/compte|pack|hissab|epargne|ouverture/i.test(t))      cle = 'compte';
+  else if (/carte|visa|mastercard|hassad|prepay/i.test(t))       cle = 'carte';
+  else if (/pocket|chaabi|digital|mobile|application|nfc/i.test(t)) cle = 'digital';
+  setSuggestions(SUGG_CTX[cle]);
+}
+
+// ══════════════════════════════════════════════
+// SIMULATEUR — taux multiples par type de crédit
+// ══════════════════════════════════════════════
+
+// Taux BCP par type de crédit
+const BCP_TAUX = {
+  immobilier: [
+    { label: 'Sakane / Miftah (fixe)',  taux: 5.41 },
+    { label: 'Damane Assakane',         taux: 5.00 },
+    { label: 'Logement social',         taux: 4.50 },
+  ],
+  consommation: [
+    { label: 'Tasahil (standard)',      taux: 8.50 },
+    { label: 'Crédit éducation',        taux: 7.50 },
+    { label: 'Crédit Al Asfar',         taux: 9.00 },
+  ],
+  auto: [
+    { label: 'Auto neuf (≤ 48 mois)',   taux: 5.00 },
+    { label: 'Auto neuf (≤ 72 mois)',   taux: 5.50 },
+    { label: 'Auto occasion',           taux: 7.50 },
+  ],
+};
+
+function afficherSimulateurForm() {
+  addMessage(`
+    <div class="sim-form">
+      <div class="sim-title">🧮 Simulateur de Crédit BCP</div>
+
+      <div class="sim-field">
+        <label>Type de crédit</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+          <button onclick="selectTypeSim(this,'immobilier')"  class="sim-type-btn sim-type-active">🏠 Immobilier</button>
+          <button onclick="selectTypeSim(this,'consommation')" class="sim-type-btn">💳 Consommation</button>
+          <button onclick="selectTypeSim(this,'auto')"         class="sim-type-btn">🚗 Auto</button>
+        </div>
+      </div>
+
+      <div class="sim-field">
+        <label>Montant souhaité (DH)</label>
+        <input type="number" id="sim_capital" placeholder="ex : 200 000" min="1000"/>
+      </div>
+
+      <div class="sim-field">
+        <label>Durée (années)</label>
+        <input type="number" id="sim_duree" placeholder="ex : 20" min="1" max="30"/>
+      </div>
+
+      <button class="sim-cta" onclick="lancerSimulation()">📊 Calculer toutes les mensualités</button>
+    </div>`, 'bot', true);
+
+  // Init type par défaut
+  window._simType = 'immobilier';
+}
+
+function selectTypeSim(btn, type) {
+  document.querySelectorAll('.sim-type-btn').forEach(b => b.classList.remove('sim-type-active'));
+  btn.classList.add('sim-type-active');
+  window._simType = type;
+}
+
+function calcMensualite(capital, tauxAnnuel, dureeAns) {
+  const duree_mois = dureeAns * 12;
+  const t = (tauxAnnuel / 100) / 12;
+  const mensualite = (capital * t) / (1 - Math.pow(1 + t, -duree_mois));
+  const coutTotal  = mensualite * duree_mois;
+  return {
+    mensualite:    Math.round(mensualite * 100) / 100,
+    coutTotal:     Math.round(coutTotal * 100) / 100,
+    coutInterets:  Math.round((coutTotal - capital) * 100) / 100,
+  };
+}
+
+function fmt(n) {
+  return n.toLocaleString('fr-MA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' DH';
+}
+
+async function lancerSimulation() {
+  const capital = parseFloat(document.getElementById('sim_capital').value);
+  const duree   = parseInt(document.getElementById('sim_duree').value);
+  const type    = window._simType || 'immobilier';
+
+  if (!capital || !duree) { alert('Veuillez remplir le montant et la durée.'); return; }
+  if (capital < 1000)      { alert('Montant minimum : 1 000 DH.'); return; }
+  if (duree < 1 || duree > 30) { alert('Durée entre 1 et 30 ans.'); return; }
+
+  const taux_list = BCP_TAUX[type];
+
+  // Construire le tableau comparatif
+  const typeLabel = { immobilier:'🏠 Immobilier', consommation:'💳 Consommation', auto:'🚗 Auto' }[type];
+
+  const lignes = taux_list.map((t, i) => {
+    const r = calcMensualite(capital, t.taux, duree);
+    const isMin = i === 0; // première ligne = taux le plus bas
+    return `
+      <tr style="background:${i % 2 === 0 ? '#fff8f5' : '#ffffff'}${isMin ? ';border-left:3px solid #8B0A14' : ''}">
+        <td style="padding:10px 12px;font-size:12px;color:#6b5e58;font-weight:600;border-bottom:1px solid #ffe0d0">
+          ${isMin ? '⭐ ' : ''}${t.label}
+        </td>
+        <td style="padding:10px 12px;font-size:12px;color:#555;border-bottom:1px solid #ffe0d0;text-align:center">
+          ${t.taux}%
+        </td>
+        <td style="padding:10px 12px;font-size:14px;font-weight:700;color:#8B0A14;border-bottom:1px solid #ffe0d0;text-align:right">
+          ${fmt(r.mensualite)}<span style="font-size:10px;font-weight:400;color:#9e918a">/mois</span>
+        </td>
+        <td style="padding:10px 12px;font-size:12px;color:#555;border-bottom:1px solid #ffe0d0;text-align:right">
+          ${fmt(r.coutTotal)}
+        </td>
+        <td style="padding:10px 12px;font-size:12px;color:#E8720C;border-bottom:1px solid #ffe0d0;text-align:right">
+          ${fmt(r.coutInterets)}
+        </td>
+      </tr>`;
+  }).join('');
+
+  // Meilleure offre (taux le plus bas)
+  const best = calcMensualite(capital, taux_list[0].taux, duree);
+
+  addMessage(`
+    <div style="font-family:'DM Sans',Arial,sans-serif;margin-top:6px">
+
+      <!-- Hero mensualité -->
+      <div style="background:linear-gradient(135deg,#8B0A14,#a51220);border-radius:12px 12px 0 0;padding:18px 20px;text-align:center">
+        <div style="color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${typeLabel} · ${capital.toLocaleString('fr-MA')} DH · ${duree} ans</div>
+        <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:white">${fmt(best.mensualite)}</div>
+        <div style="color:rgba(255,255,255,0.65);font-size:11px;margin-top:2px">meilleure mensualité estimée (${taux_list[0].taux}%)</div>
+      </div>
+
+      <!-- Tableau comparatif -->
+      <div style="border:1px solid #ffe0d0;border-top:none;border-radius:0 0 12px 12px;overflow:hidden;box-shadow:0 4px 20px rgba(139,10,20,0.08)">
+        <div style="background:#fff3ee;padding:8px 12px;border-bottom:2px solid #E8720C">
+          <span style="font-size:11px;font-weight:700;color:#8B0A14;text-transform:uppercase;letter-spacing:0.5px">📊 Comparatif des taux BCP</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;min-width:420px">
+            <thead>
+              <tr style="background:#fdf0ea">
+                <th style="padding:8px 12px;font-size:10px;color:#9e918a;font-weight:600;text-align:left;border-bottom:1px solid #ffe0d0;text-transform:uppercase;letter-spacing:0.5px">Produit</th>
+                <th style="padding:8px 12px;font-size:10px;color:#9e918a;font-weight:600;text-align:center;border-bottom:1px solid #ffe0d0;text-transform:uppercase;letter-spacing:0.5px">Taux</th>
+                <th style="padding:8px 12px;font-size:10px;color:#9e918a;font-weight:600;text-align:right;border-bottom:1px solid #ffe0d0;text-transform:uppercase;letter-spacing:0.5px">💰 Mensualité</th>
+                <th style="padding:8px 12px;font-size:10px;color:#9e918a;font-weight:600;text-align:right;border-bottom:1px solid #ffe0d0;text-transform:uppercase;letter-spacing:0.5px">Coût total</th>
+                <th style="padding:8px 12px;font-size:10px;color:#9e918a;font-weight:600;text-align:right;border-bottom:1px solid #ffe0d0;text-transform:uppercase;letter-spacing:0.5px">Intérêts</th>
+              </tr>
+            </thead>
+            <tbody>${lignes}</tbody>
+          </table>
+        </div>
+        <div style="background:#f9f4f2;padding:10px 14px;border-top:1px solid #ffe0d0;font-size:10px;color:#9e918a;text-align:center">
+          ⚠️ Simulation indicative — Le taux définitif est fixé par votre conseiller BCP · <strong style="color:#8B0A14">080 200 80 80</strong>
+        </div>
+      </div>
+    </div>`, 'bot', true);
+
+  setSuggestions(['Ouvrir un dossier crédit','Documents requis','Taux immobilier BCP','Parler à un conseiller']);
+}
+
+// ══════════════════════════════════════════════
+// SUGGEST
+// ══════════════════════════════════════════════
+function suggest(btn) {
+  const txt = btn.textContent.trim();
+  if (/simuler|simulation/i.test(txt)) {
+    document.getElementById('suggestions').style.display = 'none';
+    addMessage(txt, 'user');
+    afficherSimulateurForm();
+    return;
+  }
+  document.getElementById('input').value = txt;
+  sendMessage();
+}
+
+// ══════════════════════════════════════════════
+// BARRE DE PROGRESSION ONBOARDING
+// ══════════════════════════════════════════════
+const OB_ETAPES_LABELS = {
+  prenom:    'Votre prénom',
+  age:       'Votre âge',
+  profil:    'Votre profil',
+  besoin:    'Votre besoin',
+  montant:   'Montant souhaité',
+  duree:     'Durée du crédit',
+  emploi:    'Situation professionnelle',
+  telephone: 'Votre téléphone',
+};
+const OB_ETAPES_ORDRE = ['prenom','age','profil','besoin','montant','duree','emploi','telephone'];
+
+function updateProgressBar(etape, termine) {
+  const container = document.getElementById('obProgress');
+  const fill      = document.getElementById('obFill');
+  const label     = document.getElementById('obLabel');
+  const count     = document.getElementById('obCount');
+  const dotsEl    = document.getElementById('obDots');
+  const total     = OB_ETAPES_ORDRE.length;
+
+  if (!etape && !termine) { container.style.display = 'none'; return; }
+
+  container.style.display = 'block';
+  const idx = termine ? total : OB_ETAPES_ORDRE.indexOf(etape);
+  const current = termine ? total : idx + 1;
+  const pct = Math.round((current / total) * 100);
+
+  label.textContent = termine ? 'Dossier complet !' : (OB_ETAPES_LABELS[etape] || etape);
+  count.textContent = `${current} / ${total}`;
+  fill.style.width  = pct + '%';
+  fill.className    = 'ob-progress-fill' + (termine ? ' done' : '');
+
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'ob-dot' + (termine ? ' complete' : i < idx ? ' done' : i === idx ? ' active' : '');
+    dotsEl.appendChild(dot);
+  }
+}
+
+function hideProgressBar() {
+  document.getElementById('obProgress').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════
+// HISTORIQUE CONVERSATIONS (localStorage)
+// ══════════════════════════════════════════════
+const HIST_KEY = 'bcp_conversations';
+
+function sauvegarderConversation() {
+  if (!nomComplet && !lastBotReply) return;
+  const convs = chargerHistorique();
+  const titre = nomComplet
+    ? `Conversation de ${nomComplet}`
+    : `Session ${new Date().toLocaleDateString('fr-FR')}`;
+  const msgs = [];
+  document.querySelectorAll('.msg').forEach(m => {
+    const bubble = m.querySelector('.msg-bubble');
+    if (bubble) msgs.push({
+      type: m.classList.contains('user') ? 'user' : 'bot',
+      text: bubble.innerText.slice(0, 120),
+    });
+  });
+  convs.unshift({
+    id:    SESSION_ID,
+    titre,
+    date:  new Date().toLocaleString('fr-FR'),
+    msgs:  msgs.slice(0, 20),
+  });
+  localStorage.setItem(HIST_KEY, JSON.stringify(convs.slice(0, 10)));
+}
+
+function chargerHistorique() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function toggleHistory() {
+  const panel = document.getElementById('historyPanel');
+  const isOpen = panel.classList.toggle('open');
+  if (isOpen) renderHistory();
+}
+
+function renderHistory() {
+  const list  = document.getElementById('historyList');
+  const convs = chargerHistorique();
+  if (!convs.length) {
+    list.innerHTML = '<div class="history-empty">Aucune conversation sauvegardée.<br>Commencez à chatter !</div>';
+    return;
+  }
+  list.innerHTML = convs.map((c, i) => `
+    <div class="history-item" onclick="chargerConversation(${i})">
+      <div class="history-item-title">${c.titre}</div>
+      <div class="history-item-meta">${c.date} · ${c.msgs.length} messages</div>
+    </div>`).join('');
+}
+
+function chargerConversation(idx) {
+  const convs = chargerHistorique();
+  const conv  = convs[idx];
+  if (!conv) return;
+  toggleHistory();
+  document.getElementById('messages').innerHTML = `<div class="date-sep">${conv.titre} — ${conv.date}</div>`;
+  conv.msgs.forEach(m => addMessage(m.text, m.type));
+  document.getElementById('sessionInfo').textContent = conv.titre;
+}
+
+function clearHistory() {
+  if (!confirm('Effacer tout l\'historique ?')) return;
+  localStorage.removeItem(HIST_KEY);
+  renderHistory();
+}
+
+// ══════════════════════════════════════════════
+// ENVOI MESSAGE (version mise à jour)
+// ══════════════════════════════════════════════
+async function sendMessage() {
+  const input = document.getElementById('input');
+  const btn   = document.getElementById('sendBtn');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  // Simulateur : "simuler/mensualité/calcul crédit" OU "crédit" seul hors onboarding
+  const _obActif = window._obEtapePrec && window._obEtapePrec !== 'termine';
+  if (/simul|mensualit|calcul.*(crédit|credit)/i.test(text)
+    || (!_obActif && /^(crédit|credit|kredi|je veux un credit|bghit credit)$/i.test(text.trim()))) {
+    document.getElementById('suggestions').style.display = 'none';
+    addMessage(text, 'user');
+    input.value = '';
+    afficherSimulateurForm();
+    return;
+  }
+
+  const lang = detecterLangue(text);
+  updateLangBadge(lang);
+
+  document.getElementById('suggestions').style.display = 'none';
+  addMessage(text, 'user');
+  lastUserMsg  = text;
+  input.value  = '';
+  btn.disabled = true;
+  showTyping();
+
+  try {
+    const res  = await fetch(BACKEND +'/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '69420' },
+      body: JSON.stringify({
+        message:    text,
+        session_id: SESSION_ID,
+        langue:     lang.toLowerCase(),   // ★ Multilingue → envoyé au LLM
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+
+    const reponse = data.reponse || 'Je suis là pour vous aider.';
+    lastBotReply  = reponse;
+
+    // Mise à jour prénom
+    if (data.prenom) {
+      nomComplet   = data.prenom;
+      userInitiale = data.prenom.charAt(0).toUpperCase();
+      document.getElementById('sessionInfo').textContent = `Session de ${data.prenom}`;
+    }
+
+    // ★ Barre de progression onboarding
+    if (data.onboarding) {
+      updateProgressBar(data.etape, data.termine);
+
+      // Stocker les données — on capture selon l'étape PRÉCÉDENTE
+      window._obData = window._obData || {};
+      const etapePrecedente = window._obEtapePrec || null;
+
+      if (data.prenom) window._obData.prenom = data.prenom;
+
+      // Mapping : étape précédente → réponse utilisateur
+      if (etapePrecedente === 'age')       window._obData.age       = text;
+      if (etapePrecedente === 'profil')    window._obData.profil    = text;
+      if (etapePrecedente === 'besoin')    window._obData.besoin    = text;
+      if (etapePrecedente === 'montant')   window._obData.montant   = text;
+      if (etapePrecedente === 'duree')     window._obData.duree     = text;
+      if (etapePrecedente === 'emploi')    window._obData.emploi    = text;
+      if (etapePrecedente === 'telephone') window._obData.telephone = text;
+
+      // Mémoriser l'étape courante pour le prochain tour
+      window._obEtapePrec = data.etape || 'termine';
+
+    } else {
+      hideProgressBar();
+    }
+
+    addMessage(reponse, 'bot');
+    speakResponse(reponse);
+
+    // ★ Si onboarding terminé → afficher fiche récapitulative PDF
+     if (data.onboarding && data.termine) {
+     window._obData      = {};
+     window._obEtapePrec = null;
+     }
+
+    afficherSuggestionsContextuelles(reponse);
+
+    // ★ Sauvegarde auto dans l'historique après chaque échange
+    sauvegarderConversation();
+
+  } catch(e) {
+    removeTyping();
+    addMessage('Désolé, une erreur de connexion. Appelez le 080 200 80 80.', 'bot');
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+
+// ══════════════════════════════════════════════
+// FICHE RÉCAPITULATIVE PDF — après onboarding
+// ══════════════════════════════════════════════
+function afficherFicheRecap(d) {
+  const now     = new Date();
+  const dateStr = now.toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+  const timeStr = now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  const ref     = 'BCP-' + now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + Math.floor(Math.random()*90000+10000);
+
+  const rows = [
+    ['Prénom',      d.prenom    || '—'],
+    ['Âge',         d.age       || '—'],
+    ['Profil',      d.profil    || '—'],
+    ['Besoin',      d.besoin    || '—'],
+    ['Montant',     d.montant   || '—'],
+    ['Durée',       d.duree     || '—'],
+    ['Emploi',      d.emploi    || '—'],
+    ['Téléphone',   d.telephone || '—'],
+  ].map((r,i) => `
+    <tr style="background:${i%2===0?'#fff8f5':'#ffffff'}">
+      <td style="padding:10px 16px;font-size:12px;color:#6b5e58;font-weight:600;border-bottom:1px solid #ffe0d0;width:40%">${r[0]}</td>
+      <td style="padding:10px 16px;font-size:13px;color:#1a1614;border-bottom:1px solid #ffe0d0;font-weight:500">${r[1]}</td>
+    </tr>`).join('');
+
+  const ficheHTML = `
+    <div id="ficheRecap" style="font-family:'DM Sans',Arial,sans-serif;margin-top:10px">
+
+      <!-- BOUTON IMPRIMER -->
+      <button onclick="imprimerFiche()" style="
+        display:flex;align-items:center;gap:8px;margin-bottom:12px;
+        background:linear-gradient(135deg,#8B0A14,#a51220);
+        color:white;padding:10px 20px;border-radius:22px;border:none;
+        font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',Arial,sans-serif;
+        box-shadow:0 4px 14px rgba(139,10,20,0.35)">
+        📄 Télécharger la fiche PDF
+      </button>
+
+      <!-- FICHE À IMPRIMER -->
+      <div id="ficheContent" style="
+        border:1px solid #e8d0c8;border-radius:12px;overflow:hidden;
+        box-shadow:0 4px 20px rgba(139,10,20,0.1)">
+
+        <!-- HEADER BCP -->
+        <div style="background:linear-gradient(135deg,#8B0A14 0%,#a51220 100%);padding:20px 24px;display:flex;align-items:center;gap:14px">
+          <div style="width:48px;height:48px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:5px;flex-shrink:0">
+            <img src="/logobcp.png" alt="BCP" style="width:100%;object-fit:contain"
+              onerror="this.parentElement.innerHTML='<span style=&quot;color:#8B0A14;font-size:10px;font-weight:900&quot;>BCP</span>'">
+          </div>
+          <div>
+            <div style="color:white;font-size:14px;font-weight:700;letter-spacing:0.3px">BANQUE CENTRALE POPULAIRE</div>
+            <div style="color:rgba(255,255,255,0.7);font-size:11px;text-transform:uppercase;letter-spacing:1px">Banque Populaire du Maroc</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="color:rgba(255,255,255,0.6);font-size:10px">Réf. dossier</div>
+            <div style="color:#f39c12;font-size:13px;font-weight:700">${ref}</div>
+          </div>
+        </div>
+
+        <!-- BANDE ORANGE -->
+        <div style="background:linear-gradient(90deg,#E8720C,#f07d20);padding:8px 24px;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:white;font-size:12px;font-weight:600">📋 FICHE RÉCAPITULATIVE CLIENT</span>
+          <span style="color:rgba(255,255,255,0.85);font-size:11px">${dateStr} à ${timeStr}</span>
+        </div>
+
+        <!-- TABLEAU DONNÉES -->
+        <table style="width:100%;border-collapse:collapse">
+          ${rows}
+        </table>
+
+        <!-- FOOTER -->
+        <div style="background:#f9f4f2;padding:14px 24px;border-top:2px solid #E8720C;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:11px;color:#9e918a">
+            Document généré par l'Assistant Intelligent BCP<br>
+            <span style="color:#8B0A14;font-weight:600">080 200 80 80</span> — Service client disponible 24h/24
+          </div>
+          <div style="text-align:right;font-size:10px;color:#b8a8a0">
+            © ${now.getFullYear()} Banque Populaire du Maroc<br>
+            Direction Transformation Digitale
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  addMessage(ficheHTML, 'bot', true);
+}
+
+function imprimerFiche() {
+  const contenu = document.getElementById('ficheContent');
+  if (!contenu) return;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>Fiche Récapitulative BCP</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { margin:20px; font-family:'DM Sans',Arial,sans-serif; }
+      @media print {
+        body { margin:0; }
+        button { display:none !important; }
+      }
+    </style>
+  </head><body>
+    ${contenu.outerHTML}
+    <script>window.onload=()=>{ window.print(); }<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+</script>
+</body>
+</html>
